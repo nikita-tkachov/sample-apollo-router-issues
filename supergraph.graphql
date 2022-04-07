@@ -1,0 +1,82 @@
+schema
+@core(feature: "https://specs.apollo.dev/core/v0.2"),
+@core(feature: "https://specs.apollo.dev/join/v0.1", for: EXECUTION)
+{
+    query: Query
+}
+
+directive @core(as: String, feature: String!, for: core__Purpose) repeatable on SCHEMA
+
+directive @join__field(graph: join__Graph, provides: join__FieldSet, requires: join__FieldSet) on FIELD_DEFINITION
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+directive @join__owner(graph: join__Graph!) on INTERFACE | OBJECT
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet) repeatable on INTERFACE | OBJECT
+
+type Club
+@join__owner(graph: CLUBS)
+@join__type(graph: CLUBS, key: "id")
+@join__type(graph: POSTS, key: "id")
+{
+    id: ID! @join__field(graph: CLUBS)
+    posts: PostConnection! @join__field(graph: POSTS)
+    thumbnail: Thumbnail @join__field(graph: CLUBS)
+}
+
+type ClubConnection {
+    edges: [ClubEdge!]!
+}
+
+type ClubEdge {
+    node: Club!
+}
+
+type Post
+@join__owner(graph: POSTS)
+@join__type(graph: POSTS, key: "id")
+{
+    id: ID! @join__field(graph: POSTS)
+}
+
+type PostConnection {
+    edges: [PostEdge!]!
+}
+
+type PostEdge {
+    node: Post!
+}
+
+type Query {
+    clubs: ClubConnection! @join__field(graph: CLUBS)
+}
+
+type Thumbnail
+@join__owner(graph: THUMBNAIL)
+@join__type(graph: THUMBNAIL, key: "id")
+@join__type(graph: CLUBS, key: "id")
+{
+    id: ID! @join__field(graph: THUMBNAIL)
+    type: String! @join__field(graph: THUMBNAIL)
+}
+
+enum core__Purpose {
+    """
+    `EXECUTION` features provide metadata necessary to for operation execution.
+    """
+    EXECUTION
+
+    """
+    `SECURITY` features provide metadata necessary to securely resolve fields.
+    """
+    SECURITY
+}
+
+scalar join__FieldSet
+
+enum join__Graph {
+    CLUBS @join__graph(name: "clubs" url: "http://clubs:4000")
+    POSTS @join__graph(name: "posts" url: "http://posts:4000")
+    THUMBNAIL @join__graph(name: "thumbnail" url: "http://thumbnail:4000")
+}

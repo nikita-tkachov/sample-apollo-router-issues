@@ -1,0 +1,19 @@
+version: '3'
+services:
+  apollo-router:
+    container_name: apollo-router
+    build: ./router
+    volumes:
+      - ./supergraph.graphql:/etc/config/supergraph.graphql
+      - ./router/configuration.yaml:/etc/config/configuration.yaml
+    ports:
+      - "4000:4000"
+  clubs:
+    container_name: clubs
+    build: ./subgraphs/clubs
+  posts:
+    container_name: posts
+    build: ./subgraphs/posts
+  thumbnail:
+    container_name: thumbnail
+    build: ./subgraphs/thumbnail
